@@ -48,6 +48,8 @@ def getInputs():
     while True:
         useCase = input("Enter your desired " + GREEN_TEXT + "Use Case: " + RESET_TEXT)
         if useCase.lower() == "edit" or useCase.lower() == "complete":
+            if useCase.lower() == "edit":
+                print(RED_TEXT + "Be sure to place your text to modify into Input.txt!\n" + RESET_TEXT)
             break
         else:
             print("Invalid use case. Please enter either 'edit' or 'complete'. Try again.")
