@@ -17,25 +17,8 @@ RESET_TEXT = "\033[0m"
 # models = openai.Model.list()
 # print(models)
 
-# Example API request
-# response = openai.Completion.create(
-#     model = "text-davinci-003",
-#     prompt = "Hello",
-#     temperature = 0.95,
-#     max_tokens = 10,
-# )
-# print(response)
-
 
 def textCompletion(model, prompt, temp):
-    if(model == "davinci"):
-        model = "text-davinci-003"
-    elif(model == "curie"):
-        model = "text-curie-001"
-    elif(model == "babbage"):
-        model = "text-babbage-001"
-    elif(model == "ada"):
-        model = "text-ada-001"
     response = openai.Completion.create(
         model = model,
         prompt = prompt,
@@ -74,6 +57,14 @@ def getInputs():
     while True:
         model = input("Enter the "+ BLUE_TEXT + "Model " + RESET_TEXT + "you want to use: ")
         if model.lower() in validModels:
+            if(model == "davinci"):
+                model = "text-davinci-003"
+            elif(model == "curie"):
+                model = "text-curie-001"
+            elif(model == "babbage"):
+                model = "text-babbage-001"
+            elif(model == "ada"):
+                model = "text-ada-001"
             break
         else:
             print("Invalid model. Please enter either 'davinci', 'curie', 'babbage', or 'ada'. Try again.")
