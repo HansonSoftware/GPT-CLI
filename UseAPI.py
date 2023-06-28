@@ -41,15 +41,36 @@ def welcome():
     print(BLUE_TEXT + "Model: " + RESET_TEXT + "[davinci, curie, babbage, ada] Enter one of these values.")
     print('    This controls which model to use, davinci is the "smartest".\n')
     print(YELLOW_TEXT + "Temperature: " + RESET_TEXT + "Enter a value between 0.0 and 1.0")
-    print('    Temperature controls the "creativity" of the response.\n    1.0 is most "creative\n"')
+    print('    Temperature controls the "creativity" of the response.\n    1.0 is most "creative"\n')
 
 def getInputs():
-    useCase = input("Enter your desired " + GREEN_TEXT + "Use Case: " + RESET_TEXT)
-    # TODO: Validate useCase, have user try again if invlid
-    model = input("Enter the "+ BLUE_TEXT + "Model " + RESET_TEXT + "you want to use: ")
-    # TODO: Validate model, have user try again if invlid
-    temp = float(input("Enter a " + YELLOW_TEXT + "Temperture " + RESET_TEXT + "[0.0, 1.0]: "))
-    # TODO: Validate float value, have user try again if invlid
+    # Use Case Validation:
+    while True:
+        useCase = input("Enter your desired " + GREEN_TEXT + "Use Case: " + RESET_TEXT)
+        if useCase.lower() == "edit" or useCase.lower() == "complete":
+            break
+        else:
+            print("Invalid use case. Please enter either 'edit' or 'complete'. Try again.")
+
+    # Model Validation:
+    validModels = ["davinci", "curie", "babbage", "ada"]
+    while True:
+        model = input("Enter the "+ BLUE_TEXT + "Model " + RESET_TEXT + "you want to use: ")
+        if model.lower() in validModels:
+            break
+        else:
+            print("Invalid model. Please enter either 'davinci', 'curie', 'babbage', or 'ada'. Try again.")
+
+    # Temperature Validation:
+    while True:
+        try:
+            temp = float(input("Enter a " + YELLOW_TEXT + "Temperature " + RESET_TEXT + "[0.0, 1.0]: "))
+            if (0.0 <= temp <= 1.0):
+                break
+            else:
+                print("Invalid temperature. Please enter a float value between [0.0 and 1.0]. Try again.")
+        except ValueError:
+            print("Invalid temperature. Please enter a valid float value. Try again.")
 
     return useCase, model, temp
 
