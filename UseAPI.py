@@ -1,5 +1,6 @@
 import openai
 from decouple import config
+import json
 
 API_KEY = config("OPENAI_KEY")
 
@@ -26,7 +27,23 @@ RESET_TEXT = "\033[0m"
 # print(response)
 
 
-# textCompletion(model, prompt, temp)
+def textCompletion(model, prompt, temp):
+    if(model == "davinci"):
+        model = "text-davinci-003"
+    elif(model == "curie"):
+        model = "text-curie-001"
+    elif(model == "babbage"):
+        model = "text-babbage-001"
+    elif(model == "ada"):
+        model = "text-ada-001"
+    response = openai.Completion.create(
+        model = model,
+        prompt = prompt,
+        temperature = temp,
+        #feel free to adjust max_tokens to your needs
+        max_tokens = 10
+    )
+    return response
 
 # textEdit(model, prompt, temp)
 
@@ -69,7 +86,9 @@ def main():
     choice = input("\nProceed? (Y/n): ")
     if choice.lower() in ["y", "yes"]:
         print(GREEN_TEXT + "Proceeding..." + RESET_TEXT)
-        # TODO: Correct function call will be made here.
+        if(useCase == "complete"):
+            response = json.loads(str(textCompletion(model, prompt, temp)))
+            print(response['choices'][0]['text'])
     else:
         print(RED_TEXT + "Exiting..." + RESET_TEXT)
 
