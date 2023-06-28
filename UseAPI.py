@@ -61,7 +61,10 @@ def printChoices(useCase, model, temp):
 def main():
     welcome()
     useCase, model, temp = getInputs()
+    file = open("prompt.txt", "r")
+    prompt = file.read()
     printChoices(useCase, model, temp)
+    print("Prompt:\n%s" % prompt)
     choice = input("\nProceed? (Y/n): ")
     if choice.lower() in ["y", "yes"]:
         print(GREEN_TEXT + "Proceeding..." + RESET_TEXT)
