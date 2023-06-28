@@ -1,4 +1,3 @@
-from curses import panel
 import openai
 from decouple import config
 
@@ -13,17 +12,19 @@ YELLOW_TEXT = "\033[93m"
 BLUE_TEXT = "\033[94m"
 RESET_TEXT = "\033[0m"
 
+# Prints all available Models
 # models = openai.Model.list()
 # print(models)
 
+# Example API request
 # response = openai.Completion.create(
 #     model = "text-davinci-003",
 #     prompt = "Hello",
 #     temperature = 0.95,
 #     max_tokens = 10,
 # )
-
 # print(response)
+
 
 # textCompletion(model, prompt, temp)
 
@@ -40,7 +41,7 @@ def welcome():
     print(BLUE_TEXT + "Model: " + RESET_TEXT + "[davinci, curie, babbage, ada] Enter one of these values.")
     print('    This controls which model to use, davinci is the "smartest".\n')
     print(YELLOW_TEXT + "Temperature: " + RESET_TEXT + "Enter a value between 0.0 and 1.0")
-    print('    Temperature controls the "creativity" of the response.\n    1.0 is most "creative"')
+    print('    Temperature controls the "creativity" of the response.\n    1.0 is most "creative\n"')
 
 def getInputs():
     useCase = input("Enter your desired " + GREEN_TEXT + "Use Case: " + RESET_TEXT)
