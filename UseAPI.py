@@ -28,7 +28,14 @@ def textCompletion(model, prompt, temp):
     )
     return response
 
-# textEdit(model, prompt, temp)
+def textEdit(model, prompt, input_value, temp):
+    response = openai.Edit.create(
+        model = model,
+        instruction = prompt,
+        temperature = temp,
+        input = input_value,
+    )
+    return response
 
 
 # Command Line Interface:
@@ -57,19 +64,23 @@ def getInputs():
     # Model Validation:
     validModels = ["davinci", "curie", "babbage", "ada"]
     while True:
-        model = input("Enter the "+ BLUE_TEXT + "Model " + RESET_TEXT + "you want to use: ")
-        if model.lower() in validModels:
-            if(model == "davinci"):
-                model = "text-davinci-003"
-            elif(model == "curie"):
-                model = "text-curie-001"
-            elif(model == "babbage"):
-                model = "text-babbage-001"
-            elif(model == "ada"):
-                model = "text-ada-001"
+        if(useCase.lower() == "complete"):
+            model = input("Enter the "+ BLUE_TEXT + "Model " + RESET_TEXT + "you want to use: ")
+            if model.lower() in validModels:
+                if(model == "davinci"):
+                    model = "text-davinci-003"
+                elif(model == "curie"):
+                    model = "text-curie-001"
+                elif(model == "babbage"):
+                    model = "text-babbage-001"
+                elif(model == "ada"):
+                    model = "text-ada-001"
+                break
+            else:
+                print("Invalid model. Please enter either 'davinci', 'curie', 'babbage', or 'ada'. Try again.")
+        else: 
+            model = "text-davinci-edit-001"
             break
-        else:
-            print("Invalid model. Please enter either 'davinci', 'curie', 'babbage', or 'ada'. Try again.")
 
     # Temperature Validation:
     while True:
@@ -95,13 +106,22 @@ def main():
     useCase, model, temp = getInputs()
     file = open("Prompt.txt", "r")
     prompt = file.read()
+    file.close()
     printChoices(useCase, model, temp)
     print("Prompt:\n%s" % prompt)
+    if(useCase.lower() == "edit"):
+        file = open("Input.txt" , "r")
+        input_value = file.read()
+        file.close()
+        print("Input:\n%s" % input_value)
     choice = input("\nProceed? (Y/n): ")
     if choice.lower() in ["y", "yes"]:
         print(GREEN_TEXT + "Proceeding..." + RESET_TEXT)
-        if(useCase == "complete"):
+        if(useCase.lower() == "complete"):
             response = json.loads(str(textCompletion(model, prompt, temp)))
+            print(response['choices'][0]['text'])
+        elif(useCase.lower() == "edit"):
+            response = json.loads(str(textEdit(model, prompt, input_value, temp)))
             print(response['choices'][0]['text'])
     else:
         print(RED_TEXT + "Exiting..." + RESET_TEXT)
