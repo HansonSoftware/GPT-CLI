@@ -62,7 +62,7 @@ def printChoices(useCase, model, temp):
 def main():
     welcome()
     useCase, model, temp = getInputs()
-    file = open("prompt.txt", "r")
+    file = open("Prompt.txt", "r")
     prompt = file.read()
     printChoices(useCase, model, temp)
     print("Prompt:\n%s" % prompt)
