@@ -28,12 +28,13 @@ def textCompletion(model, prompt, temp):
     )
     return response
 
-def textEdit(model, prompt, input_value, temp):
+def textEdit(model, prompt, inputValue, temp):
     response = openai.Edit.create(
         model = model,
         instruction = prompt,
         temperature = temp,
-        input = input_value,
+        input = inputValue,
+        top_p = 1
     )
     return response
 
@@ -43,10 +44,11 @@ def welcome():
     print("Welcome to the " + RED_TEXT + "DevX" + RESET_TEXT + " OpenAI Command Line Interface!")
     print("You will be prompted to enter some values to tweak the API call made to OpenAI")
     print(RED_TEXT + "Be sure to place your prompt into Prompt.txt!\n" + RESET_TEXT)
+    print(RED_TEXT + "If you plan to edit, be sure to place your text to modify into Input.txt!\n" + RESET_TEXT)
     print(GREEN_TEXT + "Use Case: " + RESET_TEXT + "[edit, complete] Enter one of these values.")
     print("    This controls which function called.\n    edit: ChatGPT will edit your prompt\n    complete: ChatGPT will respond to your prompt\n")
     print(BLUE_TEXT + "Model: " + RESET_TEXT + "[davinci, curie, babbage, ada] Enter one of these values.")
-    print('    This controls which model to use, davinci is the "smartest".\n')
+    print('    This controls which model to use, davinci is the "smartest".\n    If your use case is "edit", the model will be preset.')
     print(YELLOW_TEXT + "Temperature: " + RESET_TEXT + "Enter a value between 0.0 and 1.0")
     print('    Temperature controls the "creativity" of the response.\n    1.0 is most "creative"\n')
 
@@ -55,12 +57,9 @@ def getInputs():
     while True:
         useCase = input("Enter your desired " + GREEN_TEXT + "Use Case: " + RESET_TEXT)
         if useCase.lower() == "edit" or useCase.lower() == "complete":
-            if useCase.lower() == "edit":
-                print(RED_TEXT + "Be sure to place your text to modify into Input.txt!\n" + RESET_TEXT)
             break
         else:
             print("Invalid use case. Please enter either 'edit' or 'complete'. Try again.")
-
     # Model Validation:
     validModels = ["davinci", "curie", "babbage", "ada"]
     while True:
@@ -81,7 +80,6 @@ def getInputs():
         else: 
             model = "text-davinci-edit-001"
             break
-
     # Temperature Validation:
     while True:
         try:
@@ -97,9 +95,9 @@ def getInputs():
 
 def printChoices(useCase, model, temp):
     print("\nYou Entered:")
-    print("Use Case:", useCase)
-    print("Model:", model)
-    print("Temperature:", temp)
+    print(GREEN_TEXT + "Use Case:" + RESET_TEXT, useCase)
+    print(BLUE_TEXT + "Model:" + RESET_TEXT, model)
+    print(YELLOW_TEXT + "Temperature:" + RESET_TEXT, temp)
 
 def main():
     welcome()
@@ -111,17 +109,18 @@ def main():
     print("Prompt:\n%s" % prompt)
     if(useCase.lower() == "edit"):
         file = open("Input.txt" , "r")
-        input_value = file.read()
+        inputValue = file.read()
         file.close()
-        print("Input:\n%s" % input_value)
+        print("Input:\n%s" % inputValue)
     choice = input("\nProceed? (Y/n): ")
     if choice.lower() in ["y", "yes"]:
         print(GREEN_TEXT + "Proceeding..." + RESET_TEXT)
+        print("\nChat GPT Output:")
         if(useCase.lower() == "complete"):
             response = json.loads(str(textCompletion(model, prompt, temp)))
             print(response['choices'][0]['text'])
         elif(useCase.lower() == "edit"):
-            response = json.loads(str(textEdit(model, prompt, input_value, temp)))
+            response = json.loads(str(textEdit(model, prompt, inputValue, temp)))
             print(response['choices'][0]['text'])
     else:
         print(RED_TEXT + "Exiting..." + RESET_TEXT)
