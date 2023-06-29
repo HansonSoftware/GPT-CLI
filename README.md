@@ -3,14 +3,24 @@ This is a Command Line Interface that can be used to interact with OpenAI's API.
 
 ### Getting Started
 1. Clone this repo onto your machine
-2. Place your prompt into Prompt.txt
-3. If you plan to use "edit", place your text to modify in Input.txt
-4. Start the CLI
+2. Add your API Key to a .env file
+
+   Example:
+    .env should contain
+
+    ```
+    OPENAI_KEY = abc123secretkey
+    ```
+
+    You want to make sure this key is not shared.
+3. Place your prompt into Prompt.txt
+4. If you plan to use "edit", place your text to modify in Input.txt
+5. Start the CLI
 ```
 cd GPT-CLI
 python UseAPI.py
 ```
-5. Follow the prompts and get a response from Chat-GPT!
+6. Follow the prompts and get a response from Chat-GPT!
 
 ### Parameters
 Use Case:
