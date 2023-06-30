@@ -17,7 +17,18 @@ RESET_TEXT = "\033[0m"
 # models = openai.Model.list()
 # print(models)
 
-# TODO: chatCompletion():
+def chatCompletion(model, system, prompt, temp):
+    response = openai.ChatCompletion.create(
+        model = model,
+        messages = [
+            {"role": "system", "content": system},
+            {"role": "user", "content": prompt}
+        ],
+        # feel free to adjust max_tokens to your needs
+        max_tokens = 10,
+        temperature = temp
+    )
+    return response;
 
 
 def textCompletion(model, prompt, temp):
@@ -66,7 +77,7 @@ def getInputs():
     if useCase.lower() == "chat":
         #TODO: Model validation for 
         validModels = ["gpt-4", "gpt-3.5-turbo"]
-
+        model = input("Enter the "+ BLUE_TEXT + "Model " + RESET_TEXT + "you want to use: ")
     if useCase.lower() == "code" or useCase.lower() == "edit": 
         # Model Validation:
         validModels = ["davinci", "curie", "babbage", "ada"]
@@ -116,7 +127,7 @@ def main():
     printChoices(useCase, model, temp)
     print("Prompt:\n%s" % prompt)
 
-    if(useCase.lower() == "edit"):
+    if(useCase.lower() == "edit" or useCase.lower() == "chat"):
         file = open("Input.txt" , "r")
         inputValue = file.read()
         file.close()
@@ -128,9 +139,8 @@ def main():
         print(GREEN_TEXT + "Proceeding..." + RESET_TEXT)
         print("\nChat GPT Output:")
         if (useCase.lower() == "chat"):
-            # TODO: call chatCompletions()
-            response = ""
-            print(response)
+            response = json.loads(str(chatCompletion(model, inputValue, prompt, temp)))
+            print(response['choices'][0]['message']['content'])
         if(useCase.lower() == "complete"):
             response = json.loads(str(textCompletion(model, prompt, temp)))
             print(response['choices'][0]['text'])
