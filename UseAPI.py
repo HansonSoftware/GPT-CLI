@@ -58,7 +58,6 @@ def welcome():
     print("You will be prompted to enter some values to tweak the API call made to OpenAI")
     print(RED_TEXT + "Be sure to place your prompt into Prompt.txt!" + RESET_TEXT)
     print(RED_TEXT + "If you plan to edit, be sure to place your text to modify into Input.txt!" + RESET_TEXT)
-    print(RED_TEXT + "If you plan to chat, be sure to place your system prompt into System.txt!" + RESET_TEXT)
     print(GREEN_TEXT + "Use Case: " + RESET_TEXT + "[edit, complete, chat] Enter one of these values.")
     print("    This controls which function called.\n    edit: ChatGPT will edit your prompt\n    complete: ChatGPT will respond to your prompt\n    chat: Chat with the gpt-4 or gpt-3.5 models!\n")
     print(BLUE_TEXT + "Model: " + RESET_TEXT + "complete: [davinci, curie, babbage, ada], chat: [gpt-4, gpt-3.5-turbo] Enter one of these values.")
@@ -74,31 +73,38 @@ def getInputs():
             break
         else:
             print("Invalid use case. Please enter either 'edit' or 'complete'. Try again.")
+    
+    # Model Validation:
     if useCase.lower() == "chat":
-        #TODO: Model validation for 
+        # Chat Model Validation:
         validModels = ["gpt-4", "gpt-3.5-turbo"]
-        model = input("Enter the "+ BLUE_TEXT + "Model " + RESET_TEXT + "you want to use: ")
-    if useCase.lower() == "code" or useCase.lower() == "edit": 
-        # Model Validation:
+        while True:
+            model = input("Enter the "+ BLUE_TEXT + "Model " + RESET_TEXT + "you want to use: ")
+            if model.lower() in validModels:
+                break
+            else:
+                print('Invalid Chat Model. Please enter "gpt-3.5" OR "gpt-4". Try again.')
+    if useCase.lower() == "complete":  
+        # Complete Model Validation:
         validModels = ["davinci", "curie", "babbage", "ada"]
         while True:
-            if(useCase.lower() == "complete"):
-                model = input("Enter the "+ BLUE_TEXT + "Model " + RESET_TEXT + "you want to use: ")
-                if model.lower() in validModels:
-                    if(model == "davinci"):
-                        model = "text-davinci-003"
-                    elif(model == "curie"):
-                        model = "text-curie-001"
-                    elif(model == "babbage"):
-                        model = "text-babbage-001"
-                    elif(model == "ada"):
-                        model = "text-ada-001"
-                    break
-                else:
-                    print("Invalid model. Please enter either 'davinci', 'curie', 'babbage', or 'ada'. Try again.")
-            else: 
-                model = "text-davinci-edit-001"
+            model = input("Enter the "+ BLUE_TEXT + "Model " + RESET_TEXT + "you want to use: ")
+            if model.lower() in validModels:
+                if(model == "davinci"):
+                    model = "text-davinci-003"
+                elif(model == "curie"):
+                    model = "text-curie-001"
+                elif(model == "babbage"):
+                    model = "text-babbage-001"
+                elif(model == "ada"):
+                    model = "text-ada-001"
                 break
+            else:
+                print("Invalid model. Please enter either 'davinci', 'curie', 'babbage', or 'ada'. Try again.")
+    # Edit Model needs to be set to "text-davinci-edit-001"
+    if useCase.lower() == "edit": 
+        model = "text-davinci-edit-001"
+
     # Temperature Validation:
     while True:
         try:
@@ -108,7 +114,7 @@ def getInputs():
             else:
                 print("Invalid temperature. Please enter a float value between [0.0 and 1.0]. Try again.")
         except ValueError:
-            print("Invalid temperature. Please enter a valid float value. Try again.")
+            print("Invalid temperature. Please enter a valid float value between [0.0 and 1.0]. Try again.")
 
     return useCase, model, temp
 
@@ -129,9 +135,12 @@ def main():
 
     if(useCase.lower() == "edit" or useCase.lower() == "chat"):
         file = open("Input.txt" , "r")
-        inputValue = file.read()
+        instruction = file.read()
         file.close()
-        print("Input:\n%s" % inputValue)
+        if useCase.lower() == "edit":
+            print("Text to edit:\n%s" % instruction)
+        if useCase.lower() == "chat":
+            print("System Instruction:\n%s" % instruction)
     
     choice = input("\nProceed? (Y/n): ")
 
@@ -139,13 +148,13 @@ def main():
         print(GREEN_TEXT + "Proceeding..." + RESET_TEXT)
         print("\nChat GPT Output:")
         if (useCase.lower() == "chat"):
-            response = json.loads(str(chatCompletion(model, inputValue, prompt, temp)))
+            response = json.loads(str(chatCompletion(model, instruction, prompt, temp)))
             print(response['choices'][0]['message']['content'])
         if(useCase.lower() == "complete"):
             response = json.loads(str(textCompletion(model, prompt, temp)))
             print(response['choices'][0]['text'])
         elif(useCase.lower() == "edit"):
-            response = json.loads(str(textEdit(model, prompt, inputValue, temp)))
+            response = json.loads(str(textEdit(model, prompt, instruction, temp)))
             print(response['choices'][0]['text'])
     else:
         print(RED_TEXT + "Exiting..." + RESET_TEXT)
