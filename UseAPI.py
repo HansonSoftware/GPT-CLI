@@ -1,46 +1,85 @@
 import openai
-from decouple import config
 import json
+from decouple import config
 
 API_KEY = config("OPENAI_KEY")
-
 openai.api_key = API_KEY
 
-# Terminal Colors:
-RED_TEXT = "\033[91m"
-GREEN_TEXT = "\033[92m"
-YELLOW_TEXT = "\033[93m"
-BLUE_TEXT = "\033[94m"
-RESET_TEXT = "\033[0m"
+# Terminal Color Defenitions:
+RED = "\033[91m"
+GREEN = "\033[92m"
+YELLOW = "\033[93m"
+BLUE = "\033[94m"
+NORMAL = "\033[0m"
 
-# Prints all available Models
-# models = openai.Model.list()
-# print(models)
-
-def chatCompletion(model, system, prompt, temp):
+# Chat: v1/chat/completions
+# Valid Models: gpt-3.5-turbo, gpt-3.5-turbo-16k
+def chatCompletion(model, system, prompt, temp, messages):
     response = openai.ChatCompletion.create(
         model = model,
-        messages = [
-            {"role": "system", "content": system},
-            {"role": "user", "content": prompt}
-        ],
-        # feel free to adjust max_tokens to your needs
-        max_tokens = 10,
-        temperature = temp
+        messages = messages,
+        temperature = temp,
+        # Adjust max_tokens to increase the max response length.
+        # 1 token ~ 3/4th of a word
+        max_tokens = 10
     )
     return response;
 
+def printChatHistory(messages):
+    print("--------------------------------")
+    for message in messages:
+        if message["role"] == "system" or message["role"] == "assistant":
+            print(RED + "%s: " % message["role"].title() + NORMAL)
+        if message["role"] == "user":
+            print(BLUE + "%s: " % message["role"].title() + NORMAL) 
+        print("Message: %s" % message["content"])
+    print("--------------------------------")
+    return
 
+def addMessage(role, content, messages):
+    message = {"role": role, "content": content}
+    messages.append(message)
+    return
+
+# This is where the magic happens, The conversation starts here.
+def interactiveChat(model, system, prompt, temp):
+    messages = []
+    messages.append({"role": "system", "content": system})
+    messages.append({"role": "user", "content": prompt})
+    flag = 0
+    while True:
+        printChatHistory(messages)
+        response = json.loads(str(chatCompletion(model, system, prompt, temp, messages)))
+        content = response['choices'][0]['message']['content']
+        print(content)
+        addMessage("assistant", content, messages)
+        userInput = input("\nEnter [q, quit or exit] to quit.\nEnter another "+ RED + "prompt " + NORMAL + ": ")
+        # if q, quit, exit
+        if userInput == "q" or input == "quit" or input == "exit":
+            print("\nThanks for chatting!")
+            print(RED + "Exiting..." + NORMAL)
+            break
+        else:
+            addMessage("user", userInput, messages)
+    return
+
+# Complete: /v1/completions
+# Valid Models: davinci, curie, babbage, ada
 def textCompletion(model, prompt, temp):
     response = openai.Completion.create(
         model = model,
         prompt = prompt,
         temperature = temp,
-        #feel free to adjust max_tokens to your needs
+        # Adjust max_tokens to increase the max response length.
+        # 1 token ~ 3/4th of a word
         max_tokens = 10
     )
-    return response
+    response = json.loads(str(response))
+    content = response['choices'][0]['text']
+    return content
 
+# Edit: /v1/edits
+# Valid Models: davinci-edit, davinci-code
 def textEdit(model, prompt, inputValue, temp):
     response = openai.Edit.create(
         model = model,
@@ -49,46 +88,53 @@ def textEdit(model, prompt, inputValue, temp):
         input = inputValue,
         top_p = 1
     )
-    return response
+    response = json.loads(str(response))
+    content = response['choices'][0]['text']
+    print(content)
+    return content
 
 
-# Command Line Interface:
+# Command Line Interface Helper Functions:
 def welcome():
-    print("Welcome to the " + RED_TEXT + "DevX" + RESET_TEXT + " OpenAI Command Line Interface!")
+    print("Welcome to the " + RED + "DevX" + NORMAL + " OpenAI Command Line Interface!")
     print("You will be prompted to enter some values to tweak the API call made to OpenAI")
-    print(RED_TEXT + "Be sure to place your prompt into Prompt.txt!" + RESET_TEXT)
-    print(RED_TEXT + "If you plan to edit, be sure to place your text to modify into Input.txt!" + RESET_TEXT)
-    print(GREEN_TEXT + "Use Case: " + RESET_TEXT + "[edit, complete, chat] Enter one of these values.")
-    print("    This controls which function called.\n    edit: ChatGPT will edit your prompt\n    complete: ChatGPT will respond to your prompt\n    chat: Chat with the gpt-4 or gpt-3.5 models!\n")
-    print(BLUE_TEXT + "Model: " + RESET_TEXT + "complete: [davinci, curie, babbage, ada], chat: [gpt-4, gpt-3.5-turbo] Enter one of these values.")
+    print(RED + "Be sure to place your prompt into Prompt.txt!" + NORMAL)
+    print(RED + "If you plan to edit, be sure to place your text to modify into Input.txt!" + NORMAL)
+    print(RED + "If you plan to chat, be sure to place your system instruction into Input.txt!" + NORMAL)
+    print(GREEN + "Use Case: " + NORMAL + "[edit, complete, chat] Enter one of these values.")
+    print("    This controls which function called.\n    edit: ChatGPT will edit your prompt\n    complete: ChatGPT will respond to your prompt\n    chat: Chat with the gpt-3.5 models!\n")
+    print(BLUE + "Model: " + NORMAL + "complete: [davinci, curie, babbage, ada], chat: [turbo, turbo-16k] Enter one of these values.")
     print('    This controls which model to use, davinci is the "smartest".\n    If your use case is "edit", the model will be preset.')
-    print(YELLOW_TEXT + "Temperature: " + RESET_TEXT + "Enter a value between 0.0 and 1.0")
+    print(YELLOW + "Temperature: " + NORMAL + "Enter a value between 0.0 and 1.0")
     print('    Temperature controls the "creativity" of the response.\n    1.0 is most "creative"\n')
 
 def getInputs():
     # Use Case Validation:
     while True:
-        useCase = input("Enter your desired " + GREEN_TEXT + "Use Case: " + RESET_TEXT)
+        useCase = input("Enter your desired " + GREEN + "Use Case: " + NORMAL)
         if useCase.lower() == "edit" or useCase.lower() == "complete" or useCase.lower() == "chat":
             break
         else:
-            print("Invalid use case. Please enter either 'edit' or 'complete'. Try again.")
-    
+            print("Invalid use case. Please enter either 'edit' or 'complete'. Try again.")    
     # Model Validation:
     if useCase.lower() == "chat":
         # Chat Model Validation:
-        validModels = ["gpt-4", "gpt-3.5-turbo"]
+        validModels = ["turbo", "turbo-16k"]
         while True:
-            model = input("Enter the "+ BLUE_TEXT + "Model " + RESET_TEXT + "you want to use: ")
+            model = input("Enter the "+ BLUE + "Model " + NORMAL + "you want to use: ")
             if model.lower() in validModels:
+                if model.lower() == "turbo":
+                    model = "gpt-3.5-turbo"
+                elif model.lower() == "turbo-16k":
+                    model = "gpt-3.5-turbo-16k"
                 break
             else:
-                print('Invalid Chat Model. Please enter "gpt-3.5" OR "gpt-4". Try again.')
+                print('Invalid Chat Model. Please enter "turbo" OR "turbo-16k". Try again.')
     if useCase.lower() == "complete":  
         # Complete Model Validation:
         validModels = ["davinci", "curie", "babbage", "ada"]
         while True:
-            model = input("Enter the "+ BLUE_TEXT + "Model " + RESET_TEXT + "you want to use: ")
+            model = input("Enter the "+ BLUE + "Model " + NORMAL + "you want to use: ")
             if model.lower() in validModels:
                 if(model == "davinci"):
                     model = "text-davinci-003"
@@ -104,11 +150,10 @@ def getInputs():
     # Edit Model needs to be set to "text-davinci-edit-001"
     if useCase.lower() == "edit": 
         model = "text-davinci-edit-001"
-
     # Temperature Validation:
     while True:
         try:
-            temp = float(input("Enter a " + YELLOW_TEXT + "Temperature " + RESET_TEXT + "[0.0, 1.0]: "))
+            temp = float(input("Enter a " + YELLOW + "Temperature " + NORMAL + "[0.0, 1.0]: "))
             if (0.0 <= temp <= 1.0):
                 break
             else:
@@ -119,10 +164,10 @@ def getInputs():
     return useCase, model, temp
 
 def printChoices(useCase, model, temp):
-    print("\nYou Entered:")
-    print(GREEN_TEXT + "Use Case:" + RESET_TEXT, useCase)
-    print(BLUE_TEXT + "Model:" + RESET_TEXT, model)
-    print(YELLOW_TEXT + "Temperature:" + RESET_TEXT, temp)
+    print("\nYou Chose:")
+    print(GREEN + "Use Case:" + NORMAL, useCase)
+    print(BLUE + "Model:" + NORMAL, model)
+    print(YELLOW + "Temperature:" + NORMAL, temp)
 
 def main():
     welcome()
@@ -131,7 +176,7 @@ def main():
     prompt = file.read()
     file.close()
     printChoices(useCase, model, temp)
-    print("Prompt:\n%s" % prompt)
+    print("\nPrompt:\n%s" % prompt)
 
     if(useCase.lower() == "edit" or useCase.lower() == "chat"):
         file = open("Input.txt" , "r")
@@ -142,22 +187,20 @@ def main():
         if useCase.lower() == "chat":
             print("System Instruction:\n%s" % instruction)
     
-    choice = input("\nProceed? (Y/n): ")
-
+    choice = input("\nProceed? (Y/n): ") 
+    # User Proceeds:
     if choice.lower() in ["y", "yes"]:
-        print(GREEN_TEXT + "Proceeding..." + RESET_TEXT)
-        print("\nChat GPT Output:")
+        print(GREEN + "Proceeding..." + NORMAL)
+        print("\nChat GPT Output:") 
         if (useCase.lower() == "chat"):
-            response = json.loads(str(chatCompletion(model, instruction, prompt, temp)))
-            print(response['choices'][0]['message']['content'])
-        if(useCase.lower() == "complete"):
-            response = json.loads(str(textCompletion(model, prompt, temp)))
-            print(response['choices'][0]['text'])
+            interactiveChat(model, instruction, prompt, temp)
+        elif(useCase.lower() == "complete"):
+            textCompletion(model, prompt, temp)
         elif(useCase.lower() == "edit"):
-            response = json.loads(str(textEdit(model, prompt, instruction, temp)))
-            print(response['choices'][0]['text'])
+            textEdit(model, prompt, instruction, temp)
+    # User Exits:       
     else:
-        print(RED_TEXT + "Exiting..." + RESET_TEXT)
+        print(RED + "Exiting..." + NORMAL)
 
 if __name__ == "__main__":
     main()
