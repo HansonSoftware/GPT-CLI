@@ -9,23 +9,28 @@ Example:
 
 .env should contain
 
-    ```
-    OPENAI_KEY = abc123secretkey
-    ```
+```
+OPENAI_KEY = sk-yourSecretKey
+```
 
-    You want to make sure this key is not shared, .env is in .gitignore.
+You want to make sure this key is not shared, .env is in .gitignore by default.
 
 3. Place your prompt into Prompt.txt
 4. If you plan to use "edit", place your text to modify in Input.txt
 5. If you plan to "chat", place your system instruction in Input.txt instead.
 5. Start the CLI
     
-    ```
-    cd GPT-CLI
-    python UseAPI.py
-    ```
+```
+cd GPT-CLI
+python UseAPI.py
+```
 
 6. Follow the prompts and get a response from Chat-GPT!
+
+## Python Imports
+1. json
+2. python-decouple
+3. openai
 
 ## Parameters
 
@@ -43,24 +48,26 @@ This determines which function will be called.
 
 ### Model:
 
-| complete   |
+| **complete** |
 | ---------- | 
 | davinci    | 
 | curie      | 
 | babbage    |
 | ada        |
 
-| edit       |
+| **edit**   |
 | ---------- | 
 | davinci    |
 
-| chat       |
+| **chat**   |
 | ---------- | 
 | turbo (gpt-3.5-turbo) |
 | turbo-16k (gpt-3.5-turbo-16k) |
 
 This determines which model to use.
-"davinci" is considered the "smartest" model.
+
+davinci is considered the "smartest" model.
+
 If your use case is "edit", the model will be preset for you.
 
 ## Temperature:
