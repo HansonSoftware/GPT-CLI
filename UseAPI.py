@@ -14,14 +14,14 @@ NORMAL = "\033[0m"
 
 # Chat: v1/chat/completions
 # Valid Models: gpt-3.5-turbo, gpt-3.5-turbo-16k
-def chatCompletion(model, system, prompt, temp, messages):
+def chatCompletion(model, temp, messages):
     response = openai.ChatCompletion.create(
         model = model,
         messages = messages,
         temperature = temp,
         # Adjust max_tokens to increase the max response length.
         # 1 token ~ 3/4th of a word
-        max_tokens = 10
+        max_tokens = 100
     )
     return response;
 
@@ -49,7 +49,7 @@ def interactiveChat(model, system, prompt, temp):
     flag = 0
     while True:
         printChatHistory(messages)
-        response = json.loads(str(chatCompletion(model, system, prompt, temp, messages)))
+        response = json.loads(str(chatCompletion(model, temp, messages)))
         content = response['choices'][0]['message']['content']
         print(content)
         addMessage("assistant", content, messages)
